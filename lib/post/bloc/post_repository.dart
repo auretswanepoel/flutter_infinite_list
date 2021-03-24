@@ -20,6 +20,7 @@ class PostRepository extends IPostRepository {
 abstract class IPostRepository {
   IPostDataProvider dataProvider;
   CacheDataProvider cacheProvider;
+
   IPostRepository(
     this.dataProvider,
     this.cacheProvider,

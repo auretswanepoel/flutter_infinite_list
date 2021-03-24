@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_infinite_list/network/bloc/network_bloc.dart';
+import 'package:flutter_infinite_list/network/bloc/network_state.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'package:flutter_infinite_list/post/bloc/bloc.dart';
@@ -8,8 +12,16 @@ import 'post_repository.dart';
 
 class PostBloc extends Bloc<PostEvent, PostState> {
   final IPostRepository postRepository;
+  bool isOffline = false;
+  StreamSubscription networkSubscription;
 
-  PostBloc(this.postRepository) : super(PostInitial());
+  PostBloc(this.postRepository) : super(PostInitial()) {
+    networkSubscription = NetworkBloc().listen((state) {
+      print(state);
+      print('Connection State');
+      isOffline = state is ConnectionSuccess ? true : false;
+    });
+  }
 
   @override
   Stream<Transition<PostEvent, PostState>> transformEvents(
@@ -49,5 +61,11 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
   Future<List<Post>> _fetchPosts(int startIndex, int total) async {
     return await postRepository.getAllPosts(startIndex, total);
+  }
+
+  @override
+  Future<void> close() {
+    networkSubscription.cancel();
+    return super.close();
   }
 }
